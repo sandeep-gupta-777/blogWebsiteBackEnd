@@ -1,0 +1,14 @@
+{
+  "host":"http://localhost:3000",
+  "S3AccessKey":"AKIAILLGYB2EASBZF5HA",
+  "S3Secret":"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",
+  "S3Bucket":"photogridsandeep",
+  "dbURL":"mongodb://photogriduser:sandeep@ds161001.mlab.com:61001/mychatcatdb1",
+  "sessionSecret": "catscanfly",
+  "fb":{
+    "clientID":"1950122065222428",
+    "clientSecret":"8685d99970a465b46b97e90ffd7fa45a",
+    "callbackURL": "//localhost:3000/auth/facebook/callback",
+    "profileFields": ["id","displayName","photos"]
+  }
+}
