@@ -21,7 +21,8 @@ module.exports = function (tempPath, rString) {
         let s3 = new AWS.S3();
         s3.putObject({
             Bucket: config.S3Bucket,
-            Key: rString + '.jpg',
+            // Key: rString + '.jpg',
+            Key: rString,
             Body: base64data,
             ACL: 'public-read'
         },function (resp) {

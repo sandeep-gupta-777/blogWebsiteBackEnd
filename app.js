@@ -13,7 +13,7 @@ const session = require('express-session');
 
 app.use(express.static(path.join(__dirname, 'public')));//this should come before app.use(require('./session')) as per this article
 
-app.use(require('./session'));;
+app.use(require('./session'));
 app.use(passport.initialize());//initialize passport's middlerware function to integrate with express
 
 app.use(passport.session());
@@ -26,6 +26,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
 // uncomment after placing your favicon in /public
+//app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -43,6 +44,9 @@ app.use(function(req, res, next) {
 const userRoutes = require('./routes/user');
 app.use('/users', userRoutes);
 app.use('/', appRoutes);
+app.get('*', function(req, res){
+    res.send('what???', 404);
+});
 
 
 // catch 404 and forward to error handler

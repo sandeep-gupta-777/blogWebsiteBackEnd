@@ -38,20 +38,23 @@ router.post('/upload', function (req, res, next) {
         console.log(req.file);
         console.log(req.file.originalname,'==================================');
          // res.json("Upload Completed for "+temppathOfUploadedFile);
-         res.json(temppathOfUploadedFile);
+         res.json(req.file.originalname);
         aws(temppathOfUploadedFile, rString);//DO NOT DELETE
-        helperDB.saveImageInDB(rString,req.body.imageAuthor,req.body.imageAuthor_id);
+        // helperDB.saveImageInDB(rString,req.body.imageAuthor,req.body.imageAuthor_id);
+        helperDB.saveImageInDB(req.file.originalname,rString,req.body.imageAuthor,req.body.imageAuthor_id);
 
     });
 
 });
+
+
 //like
 router.post('/increaseVoteCount', function (req, res, next) {
 
     //update the votecount of this perticular id
     console.log(req.body);
-    helperDB.updateVoteCount_inImageContainer( req.body.image_id);
-    helperDB.updateVoteCount_inSiteUser(req.body.user_id, req.body.image_id);
+    helperDB.updateVoteCount_inImageContainer( req.body.image_id, res);
+    helperDB.updateVoteCount_inSiteUser(req.body.user_id, req.body.image_id, res);
     res.send({messge :"Vote count updated"});
 
 });
@@ -104,6 +107,10 @@ router.get("/setcolor", function (req,res, next) {
     req.session.color  = "red";
     res.send("fav color set");
 
+});
+
+router.all('*', function (req, res) {
+    res.send('its a 404');
 });
 
 
