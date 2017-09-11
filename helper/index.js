@@ -64,18 +64,30 @@ function queryBuilder(searchQuery){
     else
         return query={};
 }
+
+// function replaceHashBySpan(text) {
+//
+//     for(let i=0;i<substringToBeHighlightedArray.length;i++){
+//         console.log('before');
+//         console.log(text);
+//         text = text.replace('%%','<span class="highlight">');
+//         text = text.replace('**','<span/>');
+//         console.log('after');
+//         console.log(text);
+//
+//     }
+//
+// }
+let substringToBeHighlightedArray = [];
+
 function caseInsensitiveReplace(text,query) {
-    // let regex = new RegExp(  query , 'g' );
-    // let textWordArray = text.split(' ');
-    // let matchedWordInText = text.match(new RegExp( '(' + query + ')', 'gi' ));//finds macthed  text in title or html
-    // let transformedText = `<span class="searchQuery">${matchedWordInText}</span>`;
-    // let finalText = text.replace(regex,transformedText );
-    // return finalText;
-    let matchedWordsInText = text.match(new RegExp(  query , 'gi' )) || [];
+    let matchedWordsInText = text && text.match(new RegExp(  query , 'gi' )) || [];
     matchedWordsInText = removeDuplicateWordsFromArray(matchedWordsInText);
     for(let i=0;i<matchedWordsInText.length;i++){
-        text = text.replace(matchedWordsInText[i] ,'<span class="searchQuery">'+matchedWordsInText[i]+'</span>');
+        text = text.replace(new RegExp(matchedWordsInText[i],'g'),'%%'+ matchedWordsInText[i] + '&&');
+        substringToBeHighlightedArray.push('<span class="searchQuery">'+matchedWordsInText[i]+'</span>');
     }
+
     return text;
 }
 
@@ -84,14 +96,45 @@ function resultTransformer(resultArray, searchQuery){
     let searchQuerySubstringArray = searchQuery.split(" ");
     for(let i=0;i<resultArray.length;i++){
         //doing this for each word in searchQuery
+
         for(let j=0;j<searchQuerySubstringArray.length;j++){
             console.log('====================================');
             if(searchQuerySubstringArray[j]=="")//this is because stupid split method will convert "sandeep " to ["sandeep",""] instead of ["sandeep"]
                 continue;
             /*Following text replaces(case insensitively) search query substring in blogTitle, blogHTML to `<span class="searchQuery">${searchQuery}</span>`  */
             resultArray[i].blogTitle= caseInsensitiveReplace(resultArray[i].blogTitle,searchQuerySubstringArray[j]);
+        }
+
+        // console.log();
+        // for(let j=0;j<searchQuerySubstringArray.length;j++){
+        //     resultArray[i].blogTitle= replaceHashBySpan(resultArray[i].blogTitle);
+        // }
+        // substringToBeHighlightedArray = [];
+        for(let j=0;j<searchQuerySubstringArray.length;j++){
+            console.log('====================================');
+            if(searchQuerySubstringArray[j]=="")//this is because stupid split method will convert "sandeep " to ["sandeep",""] instead of ["sandeep"]
+                continue;
+            /*Following text replaces(case insensitively) search query substring in blogTitle, blogHTML to `<span class="searchQuery">${searchQuery}</span>`  */
             resultArray[i].blogText= caseInsensitiveReplace(resultArray[i].blogText,searchQuerySubstringArray[j]);
         }
+
+        for(let i=0;i<resultArray.length;i++){
+            console.log('before',resultArray[i].blogTitle);
+            resultArray[i].blogTitle =resultArray[i].blogTitle.replace(new RegExp('%%','gi'),"<span class='searchQuery'>") ;
+            console.log('after',resultArray[i].blogTitle);
+
+            resultArray[i].blogTitle =resultArray[i].blogTitle.replace(new RegExp('&&','gi'),'</span>') ;
+            console.log('after2',resultArray[i].blogTitle);
+            console.log('============================');
+
+            resultArray[i].blogText =resultArray[i].blogText.replace(new RegExp('%%','gi'),"<span class='searchQuery'>") ;
+            resultArray[i].blogText =resultArray[i].blogText.replace(new RegExp('&&','gi'),'</span>') ;
+        }
+
+        //
+        // for(let j=0;j<searchQuerySubstringArray.length;j++){
+        //     resultArray[i].blogText=  replaceHashBySpan(resultArray[i].blogText);
+        // }
 
 
             // resultArray[i].blogTitle.replace(searchQuery,`<span class="searchQuery">${searchQuery}</span>`);
@@ -178,9 +221,10 @@ function addEllpisis(blogText, searchQuery) {
         str = str + " "+ blogHTMlSubstringArray[searchQueryPosition];
     }
     str = str + '...';
-    if(str = '......')
+    if(str = '......')//this will happen where search query will not match any word in text
     {
-        return
+        // return blogText.slice(0,250) + '...';
+        return blogText.split(" ").slice(0,50).join(' ') + ' ...';//returning first 50 words
     }
     console.log(str);
     return str;
@@ -203,6 +247,12 @@ function removeDuplicateWords(str) {
     return str;
 }
 
+function sortArrayByItsContentStringLength(arr) {
+    return arr.sort(function (a,b) {
+        return b.length - a.length;
+    });
+}
+
 function removeDuplicateWordsFromArray(a) {
     return Array.from(new Set(a));
 }
@@ -217,5 +267,6 @@ module.exports = {
     resultTransformer,
     calculateRelevancyForEachResult,
     addEllpisis,
-    removeDuplicateWords
+    removeDuplicateWords,
+    sortArrayByItsContentStringLength
 };

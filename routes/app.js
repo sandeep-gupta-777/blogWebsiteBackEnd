@@ -156,6 +156,7 @@ router.post('/allresults', function (req, res) {
 
     let searchQuery = req.body.searchQuery.replace(/\s+/g,' ').trim();
      searchQuery = helper.removeDuplicateWords(searchQuery);
+    searchQuery = helper.sortArrayByItsContentStringLength(searchQuery.split(' ')).join(" ");
 
     let query = helper.queryBuilder(searchQuery);//make a query object to be used for search in database
     let results = helperDB.getResultsFromDB(query ,0,10).then((value)=>
