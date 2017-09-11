@@ -33,6 +33,26 @@ let getImagesContainersFromDB = function (criteriaObject,skip,limit) {
         console.log(result+"======================================");
     });
 };
+let getCommentsFromDB = function (criteriaObject,skip,limit) {
+    // console.log(resultCountli    mit);
+    return db.commentModel.find(criteriaObject).skip(skip).limit(limit).exec(function (err, result) {
+
+        console.log(result+"======================================");
+    });
+};
+let getBlogPostsFromDB = function (criteriaObject,skip,limit) {
+    return db.blogPostModel.find(criteriaObject).skip(skip).limit(limit).exec(function (err, result) {
+
+        console.log(result+"======================================");
+    });
+};
+let getResultsFromDB = function (criteriaObject,skip,limit) {
+    //TODO: Criteria object should also consider date
+    return db.blogPostModel.find(criteriaObject).skip(skip).limit(limit).exec(function (err, result) {
+
+        console.log(result+"======================================");
+    });
+};
 
 let getUsersFromDB = function (criteriaObject,skip,limit) {
     // console.log(resultCountlimit);
@@ -80,7 +100,10 @@ module.exports =  {
     updateVoteCount_inImageContainer,
     updateVoteCount_inSiteUser,
     getUsersFromDB,
-    updateImageContainer
+    updateImageContainer,
+    getResultsFromDB,
+    getBlogPostsFromDB,
+    getCommentsFromDB
 
 };
 

@@ -22,6 +22,13 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
+//get blogPost
+router.post('/getBlogPost',function (req,res,next) {
+    helperDB.getBlogPostsFromDB({_id:req.body._id},0,1).then((blogPost)=>{
+        res.status(201).json(blogPost);
+    });
+});
+
 //our file upload function.
 router.post('/upload', function (req, res, next) {
     let temppathOfUploadedFile = '';
@@ -76,6 +83,39 @@ router.post('/loadMore', function (req,res) {
     let results = helperDB.getImagesContainersFromDB(query,skip,demanded).then((value)=> {
         res.send(value)});
 });
+router.post('/loadMoreResults', function (req,res) {
+    let skip = req.body.previouslyLoadedResultsCount;
+    let demanded = req.body.newResultsToBeLoadedCount;
+    // let demanded = 10;
+    let query = helper.queryBuilder(req.body.searchQuery);
+    let results = helperDB.getBlogPostsFromDB(query,skip,demanded).then((value)=> {
+
+
+        /*TODO: repeated code from all icons, make it in a function*/
+
+        console.log("fetched value=>",value);
+        if(value.length===0)
+        {
+            res.send([]);
+            return;
+        }
+        /*calculate relevancy*/
+        value = helper.calculateRelevancyForEachResult(value,req.body.searchQuery);
+
+        /*add ellipsis*/
+        // value[0].blogHTML = helper.addEllpisis(value[0].blogHTML,req.body.searchQuery);//TODO: change 0 to i
+
+        for(let i=0;i<value.length;i++){
+            value[i].blogText = helper.addEllpisis(value[i].blogText,req.body.searchQuery);//TODO: change 0 to i
+        }
+
+        /*make bold*/
+        value = helper.resultTransformer(value,req.body.searchQuery);
+
+        /*TODO: repeated code from all icons, make it in a function*/
+
+        res.send(value)});
+});
 router.post('/AllIcons', function (req, res) {
     //find all the image names in the database
     let query = helper.queryBuilder(req.body.searchQuery);
@@ -93,10 +133,54 @@ router.post('/AllIcons', function (req, res) {
     let results = helperDB.getImagesContainersFromDB(query ,0,10).then((value)=>
     {
         console.log("fetched value=>",value);
-        res.send(value)
+        res.send(value);
     }
     );
 
+});
+
+router.post('/blogComments', function (req, res) {
+
+    let commentBlog_id = req.body.commentBlog_id;
+    let results = helperDB.getCommentsFromDB({commentBlog_id:commentBlog_id} ,0,10).then((value)=>
+    {
+        console.log("fetched value=>",value);
+        res.send(value);
+    }
+    );
+
+});
+
+
+router.post('/allresults', function (req, res) {
+
+    let searchQuery = req.body.searchQuery.replace(/\s+/g,' ').trim();
+     searchQuery = helper.removeDuplicateWords(searchQuery);
+
+    let query = helper.queryBuilder(searchQuery);//make a query object to be used for search in database
+    let results = helperDB.getResultsFromDB(query ,0,10).then((value)=>
+    {
+        //TODO: remove repeated words from query unless exact phrase
+        //TODO: add functionality for exact phrase
+        //TODO: implement for multiple results
+
+        if(value.length===0)
+        {
+            res.send([]);
+            return;
+        }
+        /*calculate relevancy*/
+        value = helper.calculateRelevancyForEachResult(value,searchQuery);//TODO:add date as a secondary param for relevancy
+
+        for(let i=0;i<value.length;i++){
+            value[i].blogText = helper.addEllpisis(value[i].blogText,searchQuery);
+        }
+
+        /*make bold*/
+        value = helper.resultTransformer(value,searchQuery);//TODO: Do this in client side
+        res.send(value );
+    }
+    );
 });
 
 
