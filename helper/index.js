@@ -11,8 +11,7 @@ function randomString(length, chars) {
 }
 
 let findbyID = function (id) {
-    console.log("in helpers...finding by id");
-    console.log(id);
+    // console.log("in helpers...finding by id");
     return new Promise(function (resolve, reject) {
         db.siteUserModel.findById(id, function (error, user) {
             if(error){
@@ -29,8 +28,7 @@ let findOne = function (profileID) {
 };
 let createNewUser = function (profile) {
 
-    console.log("creating new user, loggin profile as recieved by facebook");
-    console.log(profile);
+    // console.log("creating new user, loggin profile as recieved by facebook");
 
     //new Model({data}) doesnt retuerns the promise => we have to create by ourself
     return new Promise(function(resolve, reject){
@@ -42,7 +40,6 @@ let createNewUser = function (profile) {
         });
         newSiteUser.save(function (error) {
             if(error){
-                console.log("some error occured");
                 reject(error);
             }else {
                 resolve(newSiteUser);
@@ -91,27 +88,24 @@ function caseInsensitiveReplace(text,query) {
     return text;
 }
 
-function resultTransformer(resultArray, searchQuery){
+function findAndMakeSearchQueryBoldInGivenText(resultArray, searchQuery){
 
     let searchQuerySubstringArray = searchQuery.split(" ");
     for(let i=0;i<resultArray.length;i++){
         //doing this for each word in searchQuery
 
         for(let j=0;j<searchQuerySubstringArray.length;j++){
-            console.log('====================================');
             if(searchQuerySubstringArray[j]=="")//this is because stupid split method will convert "sandeep " to ["sandeep",""] instead of ["sandeep"]
                 continue;
             /*Following text replaces(case insensitively) search query substring in blogTitle, blogHTML to `<span class="searchQuery">${searchQuery}</span>`  */
             resultArray[i].blogTitle= caseInsensitiveReplace(resultArray[i].blogTitle,searchQuerySubstringArray[j]);
         }
 
-        // console.log();
         // for(let j=0;j<searchQuerySubstringArray.length;j++){
         //     resultArray[i].blogTitle= replaceHashBySpan(resultArray[i].blogTitle);
         // }
         // substringToBeHighlightedArray = [];
         for(let j=0;j<searchQuerySubstringArray.length;j++){
-            console.log('====================================');
             if(searchQuerySubstringArray[j]=="")//this is because stupid split method will convert "sandeep " to ["sandeep",""] instead of ["sandeep"]
                 continue;
             /*Following text replaces(case insensitively) search query substring in blogTitle, blogHTML to `<span class="searchQuery">${searchQuery}</span>`  */
@@ -119,13 +113,9 @@ function resultTransformer(resultArray, searchQuery){
         }
 
         for(let i=0;i<resultArray.length;i++){
-            console.log('before',resultArray[i].blogTitle);
             resultArray[i].blogTitle =resultArray[i].blogTitle.replace(new RegExp('%%','gi'),"<span class='searchQuery'>") ;
-            console.log('after',resultArray[i].blogTitle);
 
             resultArray[i].blogTitle =resultArray[i].blogTitle.replace(new RegExp('&&','gi'),'</span>') ;
-            console.log('after2',resultArray[i].blogTitle);
-            console.log('============================');
 
             resultArray[i].blogText =resultArray[i].blogText.replace(new RegExp('%%','gi'),"<span class='searchQuery'>") ;
             resultArray[i].blogText =resultArray[i].blogText.replace(new RegExp('&&','gi'),'</span>') ;
@@ -153,7 +143,6 @@ function calculateRelevancyForEachResult(resultArray, searchQuery) {
             let tempcount =  ((resultArray[i].blogText).match(new RegExp(searchQuerySubstringArray[j], "gi")) || []).length;
             tempcount =  tempcount + ((resultArray[i].blogHTML).match(new RegExp(searchQuerySubstringArray[j], "gi")) || []).length;
             resultArray[i].blogRelevency = resultArray[i].blogRelevency + tempcount;
-            console.log(resultArray[i].blogRelevency);
         }
     }
     return resultArray;
@@ -183,9 +172,7 @@ function addEllpisis(blogText, searchQuery) {
         let searchQueryPosition = indexOfSearchQueryArrayCopy[i];
         let fillerArray=generateFillerArray(searchQueryPosition,blogHTMlSubstringArray.length);
         arrayOfFillerArray.push(fillerArray);
-        console.log('==============================================================================');
         // indexOfSearchQueryArray.splice(i,1,...fillerArray);
-        console.log(arrayOfFillerArray);
     }
 
     let str = "...";
@@ -208,7 +195,6 @@ function addEllpisis(blogText, searchQuery) {
             i = i+2;
         }
     }
-    console.log(merge2DArray);
 
 
     for(let i=0;i<merge2DArray.length;i++){
@@ -221,12 +207,11 @@ function addEllpisis(blogText, searchQuery) {
         str = str + " "+ blogHTMlSubstringArray[searchQueryPosition];
     }
     str = str + '...';
-    if(str = '......')//this will happen where search query will not match any word in text
+    if(str === '......')//this will happen where search query will not match any word in text
     {
         // return blogText.slice(0,250) + '...';
         return blogText.split(" ").slice(0,50).join(' ') + ' ...';//returning first 50 words
     }
-    console.log(str);
     return str;
 }
 
@@ -257,6 +242,32 @@ function removeDuplicateWordsFromArray(a) {
     return Array.from(new Set(a));
 }
 
+function transformResultsAndRespond(req,res,searchQuery,value) {
+    if(value.length===0)
+    {
+        res.send({value:[],searchQueryTImeStamp: req.body.searchQueryTImeStamp});
+        return;
+    }
+    if(searchQuery && searchQuery!=='')
+        value = calculateRelevancyForEachResult(value,searchQuery);// /*calculate relevancy*/ TODO:add date as a secondary param for relevancy
+
+    for(let i=0;i<value.length;i++){
+        value[i].blogText = addEllpisis(value[i].blogText,searchQuery);
+    }
+
+    if(searchQuery && searchQuery!=='')
+    value = findAndMakeSearchQueryBoldInGivenText(value,searchQuery);///*make bold*/ TODO: Do this in client side
+    return value;
+}
+
+function transformSearchQuery(searchQuery) {
+    searchQuery = searchQuery.replace(/\s+/g,' ').trim();
+    searchQuery = removeDuplicateWords(searchQuery);
+    searchQuery = sortArrayByItsContentStringLength(searchQuery.split(' ')).join(" ");
+    return searchQuery;
+}
+
+
 
 module.exports = {
     randomString,
@@ -264,9 +275,12 @@ module.exports = {
     createNewUser,
     findbyID,
     queryBuilder,
-    resultTransformer,
+    findAndMakeSearchQueryBoldInGivenText,
     calculateRelevancyForEachResult,
     addEllpisis,
     removeDuplicateWords,
-    sortArrayByItsContentStringLength
+    sortArrayByItsContentStringLength,
+    transformResultsAndRespond,
+    transformSearchQuery
+
 };

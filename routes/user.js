@@ -6,6 +6,8 @@ const bcrypt = require('bcryptjs');
 const db = require('../db');
 const dbHelper = require('./db');
 const jwt = require('jsonwebtoken');
+const helper = require('../helper');
+
 // require('')
 
 router.post('/signup', function (req,res,next) {
@@ -116,8 +118,6 @@ router.post('/liked_images',function (req,res,next) {
 router.post('/likedBlogs',function (req,res,next) {
 
     dbHelper.getUsersFromDB({_id:req.body.user_id},0,1).then(function (results) {
-        console.log(results[0].votes);
-        console.log(results[0]._doc.votes);
         //making an array of {_id:...}, this _id is image_id
         tempArray = [];
         for(let i=0;i<results[0].votes.length;i++){
@@ -125,12 +125,12 @@ router.post('/likedBlogs',function (req,res,next) {
             tempArray.push({_id:results[0].votes[i]})
         }
         if(tempArray.length===0){
-            res.json([]);
+            res.json({value:[]});
         }
         else {
             dbHelper.getBlogPostsFromDB({$or: tempArray}).then(function (value) {
-                console.log(value);
-                res.status(200).send(value);
+                value = helper.transformResultsAndRespond(req,res,searchQuery="",value);
+                res.status(200).send({value});
             });
         }
         }
@@ -145,23 +145,13 @@ router.post('/likedBlogs',function (req,res,next) {
 
 });
 
-router.post('/uploaded',function (req,res,next) {
-    console.log(req.body.user_id);
-    //if user_id = undefined => return 501
-    dbHelper.getImagesContainersFromDB({ imageAuthor_id: req.body.user_id }).then(function (value) {
-            console.log(value);
-            res.status(200).send(value);
-        },
-        (err)=> {res.status(500).send({message:'some DB error'});}
-    );
-});
-
 router.post('/writtenBlogs',function (req,res,next) {
     console.log(req.body.user_id);
     //if user_id = undefined => return 501
     dbHelper.getBlogPostsFromDB({ blogAuthor_id: req.body.user_id }).then(function (value) {
             console.log(value);
-            res.status(200).send(value);
+        value = helper.transformResultsAndRespond(req,res,searchQuery="",value);
+            res.status(200).send({value});
         },
         (err)=> {res.status(500).send({message:'some DB error'});}
     );
@@ -174,7 +164,6 @@ router.post('/user_details',function (req,res,next) {
             res.status(200).send(value);
         },
         (err)=> {
-            console.log('helllllllllo');
             res.status(500).send({message:'some DB error'});
         }
     );

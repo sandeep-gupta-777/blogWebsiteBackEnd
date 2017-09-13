@@ -6,7 +6,7 @@ const helperDB  =  require('./db');
 const helper = require('../helper');
 const userRoutes = require('./user');
 const passport = require('passport');
-console.log("in app.js file");
+// console.log("in app.js file");
 
 // set the directory for the uploads to the uploaded to
 let DIR = './uploads/';
@@ -41,9 +41,9 @@ router.post('/upload', function (req, res, next) {
         //when No error occurs.
         temppathOfUploadedFile = req.file.path;
 
-        console.log(req.body);
-        console.log(req.file);
-        console.log(req.file.originalname,'==================================');
+        // console.log(req.body);
+        // console.log(req.file);
+        // console.log(req.file.originalname,'==================================');
          // res.json("Upload Completed for "+temppathOfUploadedFile);
          res.json(req.file.originalname);
         aws(temppathOfUploadedFile, rString);//DO NOT DELETE
@@ -59,7 +59,7 @@ router.post('/upload', function (req, res, next) {
 router.post('/increaseVoteCount', function (req, res, next) {
 
     //update the votecount of this perticular id
-    console.log(req.body);
+    // console.log(req.body);
     helperDB.updateVoteCount_inImageContainer( req.body.image_id, res);
     helperDB.updateVoteCount_inSiteUser(req.body.user_id, req.body.image_id, res);
     res.send({messge :"Vote count updated"});
@@ -93,7 +93,7 @@ router.post('/loadMoreResults', function (req,res) {
 
         /*TODO: repeated code from all icons, make it in a function*/
 
-        console.log("fetched value=>",value);
+        // console.log("fetched value=>",value);
         if(value.length===0)
         {
             res.send([]);
@@ -132,7 +132,7 @@ router.post('/AllIcons', function (req, res) {
     //     query={};
     let results = helperDB.getImagesContainersFromDB(query ,0,10).then((value)=>
     {
-        console.log("fetched value=>",value);
+        // console.log("fetched value=>",value);
         res.send(value);
     }
     );
@@ -142,9 +142,9 @@ router.post('/AllIcons', function (req, res) {
 router.post('/blogComments', function (req, res) {
 
     let commentBlog_id = req.body.commentBlog_id;
-    let results = helperDB.getCommentsFromDB({commentBlog_id:commentBlog_id} ,0,10).then((value)=>
+    let results = helperDB.getCommentsFromDB({commentBlog_id:commentBlog_id} ,0,100).then((value)=>
     {
-        console.log("fetched value=>",value);
+        // console.log("fetched value=>",value);
         res.send(value);
     }
     );
@@ -154,32 +154,17 @@ router.post('/blogComments', function (req, res) {
 
 router.post('/allresults', function (req, res) {
 
-    let searchQuery = req.body.searchQuery.replace(/\s+/g,' ').trim();
-     searchQuery = helper.removeDuplicateWords(searchQuery);
-    searchQuery = helper.sortArrayByItsContentStringLength(searchQuery.split(' ')).join(" ");
+    let searchQuery = helper.transformSearchQuery(req.body.searchQuery);
 
     let query = helper.queryBuilder(searchQuery);//make a query object to be used for search in database
     let results = helperDB.getResultsFromDB(query ,0,10).then((value)=>
     {
         //TODO: remove repeated words from query unless exact phrase
         //TODO: add functionality for exact phrase
-        //TODO: implement for multiple results
 
-        if(value.length===0)
-        {
-            res.send([]);
-            return;
-        }
-        /*calculate relevancy*/
-        value = helper.calculateRelevancyForEachResult(value,searchQuery);//TODO:add date as a secondary param for relevancy
+        value = helper.transformResultsAndRespond(req,res,searchQuery,value);//1. Relevancy 2. make bold 3.add ellipsis
+        res.send({value,searchQueryTImeStamp: req.body.searchQueryTImeStamp} );
 
-        for(let i=0;i<value.length;i++){
-            value[i].blogText = helper.addEllpisis(value[i].blogText,searchQuery);
-        }
-
-        /*make bold*/
-        value = helper.resultTransformer(value,searchQuery);//TODO: Do this in client side
-        res.send(value );
     }
     );
 });
