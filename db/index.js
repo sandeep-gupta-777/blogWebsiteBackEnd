@@ -45,7 +45,7 @@ const BlogPostSchema = new Mongoose.Schema({
     blogAuthor_fullName:String,
     blogCreationDate:Date,
     blogLastUpdatedDate:Date,
-    blogLikes:Number,
+    blogLikes:[String],
     blogViews:Number,
     blogComments:[],
     blogTags:[String],
@@ -76,7 +76,7 @@ const commentSchema = new Mongoose.Schema({
     commentRankCode:String,
 
     commentDate: Date,
-    commentLikeCount: Number
+    commentLikes: [String],
 });
 
 

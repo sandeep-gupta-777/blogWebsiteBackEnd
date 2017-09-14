@@ -100,17 +100,20 @@ router.post('/loadMoreResults', function (req,res) {
             return;
         }
         /*calculate relevancy*/
-        value = helper.calculateRelevancyForEachResult(value,req.body.searchQuery);
+        if (req.body.searchQuery) {
+            value = helper.calculateRelevancyForEachResult(value, req.body.searchQuery);
 
-        /*add ellipsis*/
-        // value[0].blogHTML = helper.addEllpisis(value[0].blogHTML,req.body.searchQuery);//TODO: change 0 to i
+            /*add ellipsis*/
+            // value[0].blogHTML = helper.addEllpisis(value[0].blogHTML,req.body.searchQuery);//TODO: change 0 to i
 
-        for(let i=0;i<value.length;i++){
-            value[i].blogText = helper.addEllpisis(value[i].blogText,req.body.searchQuery);//TODO: change 0 to i
+            for (let i = 0; i < value.length; i++) {
+                value[i].blogText = helper.addEllpisis(value[i].blogText, req.body.searchQuery);//TODO: change 0 to i
+            }
+            /*make bold*/
+            value = helper.resultTransformer(value,req.body.searchQuery);
         }
 
-        /*make bold*/
-        value = helper.resultTransformer(value,req.body.searchQuery);
+
 
         /*TODO: repeated code from all icons, make it in a function*/
 
