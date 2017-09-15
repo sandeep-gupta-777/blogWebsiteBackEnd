@@ -48,6 +48,7 @@ const BlogPostSchema = new Mongoose.Schema({
     blogLikes:[String],
     blogViews:Number,
     blogComments:[],
+    blogCommentsCount:Number,
     blogTags:[String],
     blogRelevency:Number,
     blogImageURL: String

@@ -69,6 +69,26 @@ let updateVoteCount_inImageContainer = function (image_Id,res) {
         }
     });
 };
+let toggleLike_inBlogPost= function (blog_id, user_id, operation) {
+
+    if(operation==="push")
+    db.blogPostModel.update({_id: blog_id}, {$push: { blogLikes: user_id}}, function (err, numAffected) {//TODO: make it shorter...pull and push in one
+        // console.log("vote updated in ", count, "+_results");
+        // console.log("count");
+        if(err) {
+            // return res.json({errorMessage: ' server cant connect to databse'});
+        }
+    });
+    else
+    db.blogPostModel.update({_id: blog_id}, {$pull: { blogLikes: user_id}}, function (err, numAffected) {
+        // console.log("vote updated in ", count, "+_results");
+        // console.log("count");
+        if(err) {
+            // return res.json({errorMessage: ' server cant connect to databse'});
+        }
+    });
+
+};
 let updateImageContainer = function (imageContainer) {
 
     db.imageContainerModel.update({_id: imageContainer._id}, imageContainer, function (err, numAffected) {
@@ -78,11 +98,30 @@ let updateImageContainer = function (imageContainer) {
     });
 };
 
-let updateVoteCount_inSiteUser = function (user_id,image_id) {
-    console.log( user_id);
-    let count = db.siteUserModel.update({_id: user_id}, {$push: {votes:image_id}}, function (err, numAffected) {
-        console.log(err);
-        console.log('vote updated in',numAffected.nModified, 'users');
+let updateVoteCount_inSiteUser = function (blog_id, user_id, operation) {
+
+    if(operation==="push")
+        db.siteUserModel.update({_id: user_id}, {$push: {votes:blog_id}}, function (err, numAffected) {
+            console.log(err);
+            console.log('vote updated in',numAffected.nModified, 'users');
+        });
+    else {
+        db.siteUserModel.update({_id: user_id}, {$pull: {votes: blog_id}}, function (err, numAffected) {
+            console.log(err);
+            console.log('vote updated in', numAffected.nModified, 'users');
+        });
+    }
+};
+
+
+
+let updateCommentCount_blogPost= function (blog_Id,commentCount) {
+
+    db.blogPostModel.update({_id: blog_Id}, { blogCommentsCount: commentCount}, function (err, numAffected) {
+        // console.log("vote updated in ", count, "+_results");
+        if(err) {
+            // return res.json({errorMessage: ' server cant connect to databse'});
+        }
     });
 };
 
@@ -96,7 +135,9 @@ module.exports =  {
     updateImageContainer,
     getResultsFromDB,
     getBlogPostsFromDB,
-    getCommentsFromDB
+    getCommentsFromDB,
+    toggleLike_inBlogPost,
+    updateCommentCount_blogPost
 
 };
 

@@ -56,12 +56,22 @@ router.post('/upload', function (req, res, next) {
 
 
 //like
-router.post('/increaseVoteCount', function (req, res, next) {
+// router.post('/increaseVoteCount', function (req, res, next) {
+//
+//     //update the votecount of this perticular id
+//     // console.log(req.body);
+//     helperDB.updateVoteCount_inImageContainer( req.body.blogPost_id, req.body.user_id);
+//     helperDB.updateVoteCount_inSiteUser(req.body.user_id, req.body.image_id, res);
+//     res.send({messge :"Vote count updated"});
+//
+// });
+//like
+router.post('/toggleLike', function (req, res, next) {
 
     //update the votecount of this perticular id
     // console.log(req.body);
-    helperDB.updateVoteCount_inImageContainer( req.body.image_id, res);
-    helperDB.updateVoteCount_inSiteUser(req.body.user_id, req.body.image_id, res);
+    helperDB.toggleLike_inBlogPost( req.body.blogPost_id, req.body.user_id, req.body.operation);
+    helperDB.updateVoteCount_inSiteUser(req.body.blogPost_id, req.body.user_id, req.body.operation);
     res.send({messge :"Vote count updated"});
 
 });

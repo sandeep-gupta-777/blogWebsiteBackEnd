@@ -225,7 +225,9 @@ router.post('/saveComment',function (req,res,next) {
     console.log(req.body);
 
     let criteriaObject,_id;
-    _id = req.body._id;
+    _id = req.body.comment._id;
+    let totalCommentCountInCurrentBlog = req.body.totalCommentCountInCurrentBlog;
+    let blog_id = req.body.comment.commentBlog_id;
     if(_id) {//TODO: use upsert for entire if else block
         criteriaObject = {_id:_id};
         db.commentModel.update(criteriaObject,req.body,{ upsert: true },function (err, numAffected) {
@@ -240,12 +242,15 @@ router.post('/saveComment',function (req,res,next) {
 
     }
     else {
-        let comment = new db.commentModel(req.body);
+        let comment = new db.commentModel(req.body.comment);
         comment.save(function (err, savedDoc) {
             if(err)
                 res.json({message:'Some problem with connecting with DB'});
             else {
                 res.json({message:'successfully saved!'});
+
+                //save comment count in blog
+                dbHelper.updateCommentCount_blogPost(blog_id,totalCommentCountInCurrentBlog) ;
             }
         });
     }
