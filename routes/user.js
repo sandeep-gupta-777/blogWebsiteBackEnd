@@ -206,7 +206,8 @@ router.post('/saveBlogPost',function (req,res,next) {
             if(err)
                 res.json({message:'Some problem with connecting with DB'});
             else {
-                res.json({message:'successfully saved!'});
+                res.json({message:'successfully saved!',_id:savedDoc['_doc']['_id']});
+                console.log(savedDoc);
             }
         });
     }

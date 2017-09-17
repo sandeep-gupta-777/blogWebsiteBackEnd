@@ -177,7 +177,6 @@ router.post('/allresults', function (req, res) {
 
         value = helper.transformResultsAndRespond(req,res,searchQuery,value);//1. Relevancy 2. make bold 3.add ellipsis
         res.send({value,searchQueryTImeStamp: req.body.searchQueryTImeStamp} );
-
     }
     );
 });
