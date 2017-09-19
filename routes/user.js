@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 const dbHelper = require('./db');
+
 const jwt = require('jsonwebtoken');
 const helper = require('../helper');
 
@@ -141,6 +142,46 @@ router.post('/likedBlogs',function (req,res,next) {
             return res.status(500).json({problem_message:'DB error occurred', error:err});
         }
         );
+
+
+});
+
+router.post('/dirtyBlogs',function (req,res,next) {
+    let query = {blogAuthor_id:req.body.user_id,blogIsDirty:true};
+    dbHelper.getResultsFromDB(query ,0,10).then((value)=>
+        {
+            //TODO: remove repeated words from query unless exact phrase
+            //TODO: add functionality for exact phrase
+
+            value = helper.transformResultsAndRespond(req,res,searchQuery,value);//1. Relevancy 2. make bold 3.add ellipsis
+            res.send({value,searchQueryTImeStamp: req.body.searchQueryTImeStamp} );
+        }
+    );
+
+    // dbHelper.getUsersFromDB({_id:req.body.user_id},0,1).then(function (results) {
+    //     //making an array of {_id:...}, this _id is image_id
+    //     tempArray = [];
+    //     for(let i=0;i<results[0].votes.length;i++){
+    //         console.log('hi');
+    //         tempArray.push({_id:results[0].votes[i]})
+    //     }
+    //     if(tempArray.length===0){
+    //         res.json({value:[]});
+    //     }
+    //     else {
+    //         dbHelper.getBlogPostsFromDB({$or: tempArray}).then(function (value) {
+    //             value = helper.transformResultsAndRespond(req,res,searchQuery="",value);
+    //             res.status(200).send({value});
+    //         });
+    //     }
+    //     }
+    //
+    //
+    //     ,
+    //     (err)=> {
+    //         return res.status(500).json({problem_message:'DB error occurred', error:err});
+    //     }
+    //     );
 
 
 });

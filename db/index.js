@@ -40,6 +40,7 @@ const BlogPostSchema = new Mongoose.Schema({
     blogTitle:String,
     blogHTML:String,
     blogDraftHTML:String,
+    blogIsDirty:Boolean,
     blogText:String,
     blogAuthor_id:String,
     blogAuthor_fullName:String,

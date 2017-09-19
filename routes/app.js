@@ -176,7 +176,7 @@ router.post('/allresults', function (req, res) {
         //TODO: add functionality for exact phrase
 
         value = helper.transformResultsAndRespond(req,res,searchQuery,value);//1. Relevancy 2. make bold 3.add ellipsis
-        res.send({value,searchQueryTImeStamp: req.body.searchQueryTImeStamp} );
+        res.send({value,searchQueryTimeStamp: req.body.searchQueryTimeStamp} );
     }
     );
 });
@@ -197,3 +197,4 @@ router.all('*', function (req, res) {
 
 
 module.exports = router;
+//Testing webstorm commits
